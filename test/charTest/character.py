@@ -8,7 +8,6 @@ loadPrcFileData("", "sync-video t")
 import sys
 import time
 import direct.directbase.DirectStart
-#from direct.showbase.ShowBase import ShowBase
 
 from direct.actor.Actor import Actor
 from direct.showbase.DirectObject import DirectObject
@@ -38,7 +37,6 @@ from panda3d.bullet import BulletTriangleMeshShape
 from panda3d.bullet import ZUp
 
 class Game(DirectObject):
-#class Game(ShowBase):
 
   def __init__(self):
     #ShowBase.__init__(self)
@@ -128,7 +126,7 @@ class Game(DirectObject):
     speed = Vec3(0, 0, 0)
     omega = 0.0
 
-    if inputState.isSet('forward'): speed.setY( 2.0)
+    if inputState.isSet('forward'): speed.setY( 2.0 * dt * 60.0)
     if inputState.isSet('reverse'): speed.setY(-2.0)
     if inputState.isSet('left'):    speed.setX(-2.0)
     if inputState.isSet('right'):   speed.setX( 2.0)
@@ -137,6 +135,8 @@ class Game(DirectObject):
 
     self.player.setAngularMovement(omega)
     self.player.setLinearMovement(speed, True)
+
+ 
 
   def update(self, task):
     dt = globalClock.getDt()
@@ -152,7 +152,7 @@ class Game(DirectObject):
     self.worldNP.removeNode()
     
   def updateCamera(self):
-    camvec = self.ralph.getPos() - self.camera.getPos()
+    camvec = self.playerNP.getPos() - self.camera.getPos()
     camvec.setZ(0)
     camdist = camvec.length()
     camvec.normalize()
@@ -162,6 +162,9 @@ class Game(DirectObject):
     if camdist < 5.0:
       self.camera.setPos(self.camera.getPos() - camvec * (5 - camdist))
       camdist = 5.0
+      
+    self.camera.setZ(self.playerNP.getZ() + 2)
+    self.camera.lookAt(self.playerNP)
 
 
   ###################################
@@ -254,15 +257,16 @@ class Game(DirectObject):
                            {"run": "ralph/ralph-run",
                             "walk": "ralph/ralph-walk"})
     self.ralph.reparentTo(render)
-    self.ralph.setScale(.3)
-    #self.ralph.setPos(ralphStartPos + (0, 0, 0.5))
+    self.ralph.setScale(0.3048)
     self.ralph.setPos(0,0,-1)
     self.ralph.setH(180)
     self.ralph.reparentTo(self.playerNP)
     
+    ## Camera
     self.camera = base.cam
-    #self.camera.setPos(self.playerNP.getX(), self.playerNP.getY() + 10, 2)
-    #self.camera.lookAt(self.playerNP)
+    base.disableMouse()
+    self.camera.setPos(self.playerNP.getX(), self.playerNP.getY() + 10, 2)
+    self.camera.lookAt(self.playerNP)
 
     #self.crouching = False
 
